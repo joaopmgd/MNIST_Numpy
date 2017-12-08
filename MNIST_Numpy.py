@@ -80,7 +80,21 @@ def backward_propagation(parameters, cache, X, Y):
              "db2": db2}
     return grads
 
-def two_layer_model(X, Y, parameters, learning_rate = 0.001, num_iterations = 2):
+def update_parameters(parameters, grads, learning_rate = 1.2):
+
+    W1 = parameters["W1"] - learning_rate * grads["dW1"]
+    b1 = parameters["b1"] - learning_rate * grads["db1"]
+    W2 = parameters["W2"] - learning_rate * grads["dW2"]
+    b2 = parameters["b2"] - learning_rate * grads["db2"]
+    
+    parameters = {"W1": W1,
+                  "b1": b1,
+                  "W2": W2,
+                  "b2": b2}
+    
+    return parameters
+
+def two_layer_model(X, Y, parameters, learning_rate = 0.001, num_iterations = 10000):
     grads = {}
     costs = []
     m = X.shape[0]
@@ -89,14 +103,38 @@ def two_layer_model(X, Y, parameters, learning_rate = 0.001, num_iterations = 2)
 
         A, cache = forward_propagation(X, parameters)
         cost = compute_cost(A, Y)
-
+        
         grads = backward_propagation(parameters, cache, X, Y)
+        
+        parameters = update_parameters(parameters, grads, learning_rate)
         
         if i % 100 == 0:
             print("Cost after iteration {}: {}".format(i, np.squeeze(cost)))
             costs.append(cost)
 
     return parameters, costs
+
+def predict(X, y, parameters):
+    m = X.shape[1]
+
+    W1 = parameters["W1"]
+    b1 = parameters["b1"]
+    W2 = parameters["W2"]
+    b2 = parameters["b2"]
+
+    Z1 = np.dot(W1, X) + b1
+    A1 = np.tanh(Z1)
+    Z2 = np.dot(W2, A1) + b2
+    A2 = sigmoid(Z2)
+
+    predited_y = np.zeros((A2.shape))
+    A2_predictions = np.argmax(A2, axis=0)
+
+    for i in range(len(A2_predictions)):
+        predited_y[A2_predictions[i],i] = y[A2_predictions[i],i]
+
+    predictions = np.sum(predited_y)/m * 100
+    return predictions
 
 def plot_cost_history(cost_history):
     plt.plot(cost_history, color = 'blue')
@@ -108,8 +146,12 @@ def plot_cost_history(cost_history):
 def run():
     X_training, y_training, X_test, y_test = load_data()
     parameters = initialize_parameters(X_training.shape[0], 10, 10)
-    parameters, cost_history = two_layer_model(X_training, y_training, parameters)
-    plot_cost_history(cost_history)
+    #parameters, cost_history = two_layer_model(X_training, y_training, parameters)
+    #plot_cost_history(cost_history)
+    training_accuracy = predict(X_training, y_training, parameters)
+    print("Training Accuracy = "+str(training_accuracy))
+    test_accuracy = predict(X_test, y_test, parameters)
+    print("Test Accuracy = "+str(test_accuracy))
 
 if __name__ == '__main__':
     run()
