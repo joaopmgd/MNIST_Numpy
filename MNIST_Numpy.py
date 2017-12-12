@@ -151,6 +151,28 @@ def plot_cost_history(cost_history):
     plt.ylabel('Cost')
     plt.show()
 
+def predict_test_slideshow(X, y, parameters):
+
+    W1 = parameters["W1"]
+    b1 = parameters["b1"]
+    W2 = parameters["W2"]
+    b2 = parameters["b2"]
+
+    Z1 = np.dot(W1, X) + b1
+    A1 = np.tanh(Z1)
+    Z2 = np.dot(W2, A1) + b2
+    A2 = sigmoid(Z2)
+
+    A2_predictions = np.argmax(A2, axis=0)
+
+    for i in range (X.shape[1]):
+        random = np.random.randint(X.shape[1])
+        X_image = X[:,random].reshape((28,28))
+        plt.imshow(X_image, cmap='Greys',  interpolation='nearest')
+        plt.title("The Prediction was: "+str(A2_predictions[random]))
+        plt.draw()
+        plt.pause(1.5)
+
 def read_saved_weights():
     try:
         return np.load('weights.npy').item()
@@ -170,6 +192,7 @@ def run():
     print("Training Accuracy = "+str(training_accuracy))
     test_accuracy = predict(X_test, y_test, parameters)
     print("Test Accuracy = "+str(test_accuracy))
+    predict_test_slideshow(X_test, y_test, parameters)
 
 if __name__ == '__main__':
     run()
