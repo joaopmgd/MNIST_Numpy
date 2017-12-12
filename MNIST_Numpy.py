@@ -19,10 +19,17 @@ def load_data():
     return X_training, y_training, X_test, y_test
 
 def initialize_parameters(n_x, n_h, n_y):
-    W1 = np.random.randn(n_h, n_x) * 0.01
-    b1 = np.zeros((n_h, 1))
-    W2 = np.random.randn(n_y, n_h) * 0.01
-    b2 = np.zeros((n_y, 1))
+    parameters_loaded = read_saved_weights()
+    if parameters_loaded != None:
+        W1 = parameters_loaded['W1'] 
+        b1 = parameters_loaded['b1']
+        W2 = parameters_loaded['W2']
+        b2 = parameters_loaded['b2']
+    else:
+        W1 = np.random.randn(n_h, n_x) * 0.01
+        b1 = np.zeros((n_h, 1))
+        W2 = np.random.randn(n_y, n_h) * 0.01
+        b2 = np.zeros((n_y, 1))
 
     parameters = {"W1": W1,
                   "b1": b1,
@@ -112,6 +119,7 @@ def two_layer_model(X, Y, parameters, learning_rate = 0.001, num_iterations = 10
             print("Cost after iteration {}: {}".format(i, np.squeeze(cost)))
             costs.append(cost)
 
+    write_saved_weights(parameters)
     return parameters, costs
 
 def predict(X, y, parameters):
@@ -142,6 +150,16 @@ def plot_cost_history(cost_history):
     plt.xlabel('Iterations')
     plt.ylabel('Cost')
     plt.show()
+
+def read_saved_weights():
+    try:
+        return np.load('weights.npy').item()
+    except FileNotFoundError:
+        f = open('weights.npy', 'w')
+        return None
+
+def write_saved_weights(parameters):
+    np.save('weights.npy', parameters)
 
 def run():
     X_training, y_training, X_test, y_test = load_data()
